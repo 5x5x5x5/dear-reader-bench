@@ -12,48 +12,69 @@ a muted film at a fixed tempo. It is close to a worst case for translation, whic
 makes it a great benchmark: a model that can carry *Wizard People* into Japanese
 can carry anything.
 
-## What makes this hard (the six dimensions)
+## The headline: DRS (Dear-Reader Score)
 
-| dimension | weight | what's measured |
-|---|---|---|
-| Voice & register | 25% | The wheezing, grandiose audiobook-narrator bombast survives |
-| Humor | 25% | The jokes land *in the target language* — rebuilt, not transliterated |
-| Names & epithets | 15% | Invented names stay funny and consistent across segments |
-| Cultural adaptation | 10% | References are adapted for the target audience, not footnoted |
-| Performability | 15% | Speakable aloud in the segment's time window (isochrony) |
-| Scene fidelity | 10% | The narration still describes what's on screen |
+**DRS = performability × Σ (weight × expected win rate vs. the field)** over
+four judged dimensions, fit with a Davidson Bradley–Terry model on anchored
+pairwise comparisons:
+
+| dimension | weight | judge condition | what's measured |
+|---|---|---|---|
+| Humor | 35% | source-blind | Jokes land *in the target language* — rebuilt, not transliterated; references adapted, never footnoted |
+| Voice | 30% | source-blind | The wheezing, grandiose narrator bombast survives, including its deliberate register drops |
+| Gags | 20% | source-aware | Names/epithets/running gags derive from the *source's* gags and stay consistent with the system's own bible |
+| Fidelity | 15% | source-aware | The narration still describes this scene and this source segment |
+
+Performability (fits the time window) is **measured, not judged**: a continuous
+penalty from 110% of the window, forfeiture at 150%, and no dead-air penalty —
+the English source itself spans 57–101% fill because the pauses *are* the
+comic timing. Humor/voice are judged without the English (the audience never
+hears it); gags/fidelity plus a tethering battery keep it a *translation*
+benchmark rather than scene-conditioned comedy generation.
 
 ## Design
+
+The full architecture — instrument positions, aggregation statistics,
+bias/gaming/contamination defenses, the no-human-blocking validation program,
+and the Layer-2 behavioral instruments (detection asymmetry, gag ledger,
+payoff lift, joke cards, autopsy taxonomy) — lives in **`DESIGN.md`**. It was
+produced by a four-lens adversarial design panel (measurement theory, benchmark
+engineering, AVT industry practice, humor science); `RESEARCH.md` holds the
+literature notes.
+
+Headlines of the design:
 
 - **Two tracks.** The *public track* uses an original, copyright-safe pastiche
   corpus written in the WPDR style (see `data/segments.json` — the ongoing saga
   of *Moon Over Gorganzola*). The *private track* runs the same harness on a
   user-supplied transcript of the real work — **this repo does not and will not
-  distribute Brad Neely's text**; bring your own copy for personal research.
-- **Segments, not sentences.** Units are timed narration segments (10–45s) with
-  tagged features (`epithet`, `running_gag`, `pun`, `register_shift`,
-  `pop_culture`, `aside`) so scores can be broken out by phenomenon.
-- **Every instrument runs; humans decide which ones count.** Automatic metrics
-  (chrF++, BLEU, COMET/COMET-KIWI), a multi-provider LLM judge ensemble
-  (anchored pairwise, no judge scores its own provider family), and a computed
-  speakability metric are all reported. A meta-evaluation step correlates each
-  instrument against a bilingual human-rated sample; instruments earn their
-  place in the headline score empirically, and dimension weights are
-  recalibrated against the same data. See `RESEARCH.md` §1 for the protocol
-  and the literature-documented risks it controls for (including LLM-judge
-  bias on literary text).
-- **Performability is computed, not judged.** A speakability metric estimates
-  spoken duration of the translation against the segment's time window —
-  a fully-specified construct needing no model opinion.
+  distribute Brad Neely's text** — and is declared source-side contaminated by
+  default; the pastiche track is the scientific instrument.
+- **The task is an adaptation job, not per-segment MT:** systems deliver a
+  full-script translation *plus a bible* (their own key-names-and-phrases
+  sheet), and are held to it.
+- **Positions, argued:** BLEU excluded entirely; chrF++ appendix-only as a
+  pre-registered discriminant-validity witness; COMET-KIWI as a catastrophe
+  floor; MQM replaced by a comedy-native autopsy taxonomy. Validity is argued
+  from construct logic, bounded by an automated reliability/lesion-battery
+  panel, and pre-registered — with a small bilingual human sample required
+  before the first public leaderboard makes humor claims.
+- **Honest statistics:** gag-chain cluster bootstrap, tiers instead of ranks,
+  fixed anchor systems in every run (forced-literal, open-weight mid-tier,
+  unconstrained-rewrite — the latter two double as validity checks), and a
+  published power statement: at the current 12-segment corpus, most systems
+  are indistinguishable, and the leaderboard says so.
 
 ## Repository layout
 
 ```
-RESEARCH.md               research notes: metrics literature, judge bias, design rationale
+DESIGN.md                 the authoritative v3 architecture (panel-synthesized)
+RESEARCH.md               research notes: metrics literature, judge bias
 src/dearreader_bench/
-  schema.py               Segment / Translation / Judgment data models
-  rubric.py               the six dimensions, weights, and judge prompt builders
-  speakability.py         duration estimation vs. time window (isochrony score)
+  schema.py               segments, joke cards, adaptation jobs (bible), judgments
+  rubric.py               four judged dimensions, two-condition prompts, weights
+  speakability.py         mixed-script duration model, penalty/forfeit/fill-ratio
+  btmodel.py              Davidson Bradley-Terry fit, phi, DRS composite
 data/
   segments.json           public pastiche corpus (copyright-safe, original)
 tests/
@@ -61,7 +82,10 @@ tests/
 
 ## Status
 
-Early research phase. The corpus, rubric, schema, and speakability metric are
-in place with tests; the judge/translation harness (multi-provider, reusing the
-registry design from [commentary-track](../Gorganzola)) is the next milestone —
-see the roadmap at the end of `RESEARCH.md`.
+Design phase complete (v3, panel-synthesized — see `DESIGN.md`). Implemented
+with tests: the corpus, schema (incl. joke cards and the adaptation-job/bible
+deliverable), the two-condition rubric, the mixed-script duration model with
+its exploit surface closed, and the Davidson BT aggregation. Next per the
+DESIGN.md roadmap: corpus season 2 (the binding constraint), then the
+translation/judge harness reusing the provider registry from
+[commentary-track](../Gorganzola).

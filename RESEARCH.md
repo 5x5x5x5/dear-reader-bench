@@ -1,7 +1,9 @@
 # Research Notes
 
-*Compiled July 2026. This document grounds the benchmark's design decisions in
-the current MT-evaluation and multilingual-LLM literature.*
+*Compiled July 2026. Literature background for the benchmark. The
+authoritative evaluation architecture is `DESIGN.md` (v3, produced by a
+four-lens adversarial design panel); §1 below is retained as the v2 instrument
+survey it superseded, with the v3 positions noted inline.*
 
 ## 1. Instruments: what each one measures
 
@@ -115,19 +117,10 @@ up, that's the benchmark's headline result.
 
 ## 7. Roadmap
 
-1. ✅ Corpus v0 (12 pastiche segments, feature-tagged), schema, rubric,
-   speakability metric.
-2. Translation harness: multi-provider generation (reuse commentary-track's
-   provider registry), N systems × M languages.
-3. Judge harness: anchored pairwise ensemble + MQM spans; agreement analysis
-   between judges before trusting any ranking.
-4. Automatic-metric baselines via `unbabel-comet` / `sacrebleu` (all systems,
-   all languages).
-5. Human validation sample (bilingual raters, ≥10%): calibrate judges AND
-   automatic metrics; run the §1 meta-evaluation and set headline-score
-   composition from its results.
-6. Recalibrate dimension weights against the human data (regress overall human
-   preference on per-dimension scores) — the current weights are provisional
-   priors, not findings.
-7. Leaderboard report: per-language, per-dimension, per-feature breakdowns,
-   with per-instrument validity appendix.
+Superseded — the current roadmap is `DESIGN.md` §9. Two items from the v2
+roadmap were explicitly cut by the v3 panel with reasons worth preserving:
+weight recalibration by regressing human preference (underpowered at any
+affordable sample; replaced by a Dirichlet weight-sensitivity audit) and the
+human-gated meta-evaluation as arbiter of the headline (replaced by the lesion
+battery + reliability panel, with a scoped human humor sample required before
+the first public leaderboard rather than blocking development).
