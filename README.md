@@ -29,10 +29,11 @@ and validation program: **`DESIGN.md`**. Literature and reasoning:
 
 ## Corpus and copyright
 
-Two tracks. The *public track* runs on an original, copyright-safe pastiche
-corpus in the WPDR style (`data/segments.json` — *Moon Over Gorganzola*). The
-*private track* accepts a user-supplied transcript of the real work; **this
-repo does not and will not distribute Brad Neely's text.**
+Two tracks. The *public track* runs on an original, copyright-safe synthetic
+corpus in the WPDR style (`data/segments.json` — purpose-built test fiction,
+not an existing film). The *private track* accepts a user-supplied transcript
+of the real work; **this repo does not and will not distribute Brad Neely's
+text.**
 
 ## Layout
 

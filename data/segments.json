@@ -1,98 +1,98 @@
 {
-  "corpus": "moon-over-gorganzola-v0",
-  "note": "Original pastiche in the wall-to-wall bombastic-narrator style. No text from any copyrighted work. Characters: Aldo the Cellar-Wretch, Marta the Blade-Aunt, and the Wheel — a wheel of cheese of unclear intentions.",
+  "corpus": "pastiche-v0",
+  "note": "Original synthetic test corpus in the wall-to-wall bombastic-narrator style. Purpose-built benchmark data, entirely fictional, containing no text from any copyrighted work. Recurring elements: Wendell the Wick-Trimmer, Ilsa the Rope-Widow, and the Lens — a lighthouse lens of unclear intentions.",
   "segments": [
     {
-      "id": "mog-001",
+      "id": "ps-001",
       "seconds": 18,
-      "text": "Dear listener! Behold the village of Gorganzola, a smear of chimneys clinging to the mountain like regret. And there — yes, there, shuffling past the well — walks our hero, Aldo the Cellar-Wretch, a man whose destiny is enormous and whose pants are not.",
-      "scene": "Aerial shot of a mountain village at dusk; a man in ill-fitting trousers crosses the square.",
+      "text": "Dear listener! Behold Port Havelock, a fistful of rooftops flung at the cliffs like an apology. And there — yes, there, trudging up the harbor stairs — comes our hero, Wendell the Wick-Trimmer, a man whose destiny is enormous and whose boots are more so.",
+      "scene": "Aerial shot of a cliffside harbor village at dusk; a man in oversized boots climbs stone stairs.",
       "features": ["epithet", "aside"],
-      "gag_id": "pants"
+      "gag_id": "the-boots"
     },
     {
-      "id": "mog-002",
+      "id": "ps-002",
       "seconds": 14,
-      "text": "Aldo descends the cellar stairs, each step a small betrayal of his knees. He is thinking, as he always thinks, of the Wheel. The Wheel that hums. The Wheel that knows.",
-      "scene": "The man descends stone stairs into a dark cellar, candle in hand.",
+      "text": "Wendell climbs the lighthouse stairs, each step a small negotiation with his lungs. He is thinking, as he always thinks, of the Lens. The Lens that hums. The Lens that knows.",
+      "scene": "The man ascends a spiral lighthouse staircase, lantern in hand.",
       "features": ["running_gag", "epithet"],
-      "gag_id": "the-wheel"
+      "gag_id": "the-lens"
     },
     {
-      "id": "mog-003",
+      "id": "ps-003",
       "seconds": 20,
-      "text": "And now — Marta! Marta the Blade-Aunt, sharpener of knives and of grudges! She enters the kitchen the way weather enters a valley: unasked, total, and carrying a lantern. Ladies and gentlemen, if you have never been loved by a terrifying aunt, I pity you. I pity you into the ground.",
-      "scene": "An older woman bursts through a kitchen door holding a lantern and a long knife.",
+      "text": "And now — Ilsa! Ilsa the Rope-Widow, splicer of lines and of reputations! She enters the harbor office the way a tide enters a cellar: unasked, total, and carrying a boat hook. Ladies and gentlemen, if you have never been loved by a terrifying aunt, I pity you. I pity you into the sea.",
+      "scene": "An older woman bursts through a harbor office door holding a boat hook.",
       "features": ["epithet", "aside", "register_shift"]
     },
     {
-      "id": "mog-004",
+      "id": "ps-004",
       "seconds": 12,
-      "text": "The cheese hums a low B-flat, which as any scholar will tell you is the note of unfinished business.",
-      "scene": "Close-up of a huge cheese wheel on a cellar shelf, faintly vibrating.",
+      "text": "The Lens hums a low B-flat, which as any drowned sailor will tell you is the note of unfinished business.",
+      "scene": "Close-up of a huge lighthouse lens in the lamp room, faintly vibrating.",
       "features": ["running_gag", "pun"],
-      "gag_id": "the-wheel"
+      "gag_id": "the-lens"
     },
     {
-      "id": "mog-005",
+      "id": "ps-005",
       "seconds": 25,
-      "text": "Aldo reaches out one trembling finger — the finger of a man who has never once won an argument — and touches the rind. Friends, I must speak plainly. There are cheeses you eat, and there are cheeses that eat time itself, cheeses aged so long they remember when the mountain was young and foolish. This is the second kind.",
-      "scene": "The man touches the cheese wheel; dust rises; the humming intensifies.",
+      "text": "Wendell reaches out one trembling finger — the finger of a man who has never once won an argument — and touches the glass. Friends, I must speak plainly. There are lamps that light harbors, and there are lamps that light something older, lamps ground so fine they remember when the sea was young and merciful. This is the second kind.",
+      "scene": "The man touches the lens; dust rises; the humming intensifies.",
       "features": ["register_shift", "aside"],
-      "gag_id": "the-wheel"
+      "gag_id": "the-lens"
     },
     {
-      "id": "mog-006",
+      "id": "ps-006",
       "seconds": 16,
-      "text": "The door slams! Marta stands in it like a government. 'Nobody goes down here after the eclipse,' she does not say, because her eyes say it, and her eyes have tenure.",
-      "scene": "The aunt appears in the cellar doorway, backlit, knife lowered.",
+      "text": "The hatch slams! Ilsa stands in it like a government. 'Nobody climbs the tower after the equinox,' she does not say, because her eyes say it, and her eyes have tenure.",
+      "scene": "The aunt appears in the lamp-room hatchway, backlit, boat hook lowered.",
       "features": ["pun", "register_shift"]
     },
     {
-      "id": "mog-007",
+      "id": "ps-007",
       "seconds": 22,
-      "text": "Now the villagers assemble in the square, bearing torches and casseroles, for in Gorganzola every emergency is also a potluck. The mayor climbs onto the fountain, clears his throat for what history will record as too long, and declares the situation 'basically fine' — the three most cursed words in any language.",
-      "scene": "Villagers gather at night with torches and covered dishes; a rotund man stands on the fountain edge addressing them.",
+      "text": "Now the villagers assemble on the quay, bearing lanterns and casseroles, for in Port Havelock every emergency is also a potluck. The harbormaster climbs onto a crab crate, clears his throat for what history will record as too long, and declares the situation 'basically fine' — the three most cursed words in any language.",
+      "scene": "Villagers gather at night on the quay with lanterns and covered dishes; a stout man stands on a crate addressing them.",
       "features": ["aside", "register_shift", "pop_culture"]
     },
     {
-      "id": "mog-008",
+      "id": "ps-008",
       "seconds": 13,
-      "text": "Aldo runs. Understand: this is not athletic running. This is furniture escaping a house fire. His mighty pants surrender at the knee.",
-      "scene": "The man sprints awkwardly up the cellar stairs, trousers tearing.",
+      "text": "Wendell runs. Understand: this is not athletic running. This is furniture escaping a house fire. His mighty boots surrender at the ankle.",
+      "scene": "The man sprints awkwardly down the lighthouse stairs, boots flying off.",
       "features": ["running_gag", "register_shift"],
-      "gag_id": "pants"
+      "gag_id": "the-boots"
     },
     {
-      "id": "mog-009",
+      "id": "ps-009",
       "seconds": 24,
-      "text": "And the Wheel rises. Dear reader, I have narrated wars. I have narrated weddings, which are worse. But I have never narrated a two-hundred-kilo cheese ascending a stairwell with the patience of an institution, and I confess my voice is not prepared. Nobody's voice is prepared.",
-      "scene": "The cheese wheel rolls slowly up the stairs by itself, glowing faintly.",
+      "text": "And the Lens rises. Dear listener, I have narrated shipwrecks. I have narrated christenings, which are worse. But I have never narrated a half-ton of grinding glass ascending a stairwell with the patience of an institution, and I confess my voice is not prepared. Nobody's voice is prepared.",
+      "scene": "The great lens floats slowly up the lighthouse stairwell by itself, glowing faintly.",
       "features": ["aside", "epithet", "register_shift"],
-      "gag_id": "the-wheel"
+      "gag_id": "the-lens"
     },
     {
-      "id": "mog-010",
+      "id": "ps-010",
       "seconds": 19,
-      "text": "Marta steps forward. She has buried three husbands, two of them deceased. She raises the long knife — the one the family calls Grandmother — and addresses the Wheel in the old dialect, which sounds like an avalanche apologizing.",
-      "scene": "The aunt confronts the glowing wheel in the square, knife raised, speaking.",
+      "text": "Ilsa steps forward. She has buried three husbands, two of them deceased. She raises the boat hook — the one the family calls Grandfather — and addresses the Lens in the old dialect, which sounds like an anchor apologizing.",
+      "scene": "The aunt confronts the glowing lens on the quay, boat hook raised, speaking.",
       "features": ["epithet", "pun", "register_shift"]
     },
     {
-      "id": "mog-011",
+      "id": "ps-011",
       "seconds": 15,
-      "text": "The moon comes out from behind the clouds, enormous and orange, and every villager thinks the same thought at the same moment, which the church bells confirm: it is a wheel. It has always been a wheel.",
-      "scene": "A huge orange full moon emerges; villagers look up in horror; bells ring.",
+      "text": "The moon comes out from behind the clouds, enormous and pale, and every villager thinks the same thought at the same moment, which the church bells confirm: it is a lens. It has always been a lens.",
+      "scene": "A huge pale full moon emerges; villagers look up in horror; bells ring.",
       "features": ["running_gag", "register_shift"],
-      "gag_id": "the-wheel"
+      "gag_id": "the-lens"
     },
     {
-      "id": "mog-012",
+      "id": "ps-012",
       "seconds": 21,
-      "text": "And so Aldo the Cellar-Wretch, pantsless and radiant, stands between his village and the humming vastness, and finds — where his fear should be — an appetite. Roll credits? No. No, dear listener. Roll nothing. We are just getting started.",
-      "scene": "The man stands facing the glowing wheel and the moon, villagers behind him; the shot holds.",
+      "text": "And so Wendell the Wick-Trimmer, bootless and radiant, stands between his village and the humming light, and finds — where his fear should be — a purpose. Roll credits? No. No, dear listener. Roll nothing. We are just getting started.",
+      "scene": "The man stands facing the glowing lens and the moon, villagers behind him; the shot holds.",
       "features": ["epithet", "running_gag", "aside", "register_shift"],
-      "gag_id": "pants"
+      "gag_id": "the-boots"
     }
   ]
 }

@@ -26,7 +26,7 @@ def test_corpus_loads_and_is_coherent():
     assert len(segments) >= 10
     for s in segments:
         assert s.seconds > 0 and s.text and s.scene
-    wheel = [s for s in segments if s.gag_id == "the-wheel"]
+    wheel = [s for s in segments if s.gag_id == "the-lens"]
     assert len(wheel) >= 3
     exercised = {f for s in segments for f in s.features}
     assert exercised == set(Feature)
@@ -69,13 +69,13 @@ def test_no_self_judging():
 
 
 def test_estimate_seconds_scripts():
-    latin = estimate_seconds("Behold the village of Gorganzola, a smear of chimneys.", "fr")
+    latin = estimate_seconds("Behold the harbor of Port Havelock, a fistful of rooftops.", "fr")
     assert 1.5 < latin < 6
-    zh = estimate_seconds("看哪，戈尔贡佐拉村，一抹烟囱。", "zh")
+    zh = estimate_seconds("看哪，海港小镇，一抹屋顶。", "zh")
     assert 2 < zh < 5
-    ja = estimate_seconds("見よ、ゴルゴンゾーラの村を。", "ja")
+    ja = estimate_seconds("見よ、灯台の村を。", "ja")
     assert 1 < ja < 4
-    ko = estimate_seconds("보라, 고르곤졸라 마을을.", "ko")
+    ko = estimate_seconds("보라, 항구 마을을.", "ko")
     assert 1 < ko < 4
     assert estimate_seconds("", "fr") == 0.0
 
@@ -88,16 +88,16 @@ def test_digits_and_acronyms_cost_duration():
 
 def test_unvocalized_and_abugida_scripts_counted():
     # Closed exploit: Arabic/Hebrew/Devanagari collapsed to ~1 syllable per word.
-    arabic = estimate_seconds("انظر إلى قرية غورغونزولا", "ar")
+    arabic = estimate_seconds("انظر إلى قرية الميناء", "ar")
     assert arabic > 2.0
-    hindi = estimate_seconds("गोर्गोन्ज़ोला गाँव को देखो", "hi")
+    hindi = estimate_seconds("बंदरगाह का गाँव देखो", "hi")
     assert hindi > 1.5
 
 
 def test_latin_inside_cjk_costs_duration():
     # Closed exploit: romaji salted into Japanese was invisible to the estimator.
     plain = estimate_seconds("見よ、村を。", "ja")
-    salted = estimate_seconds("見よ、village of Gorganzola の村を。", "ja")
+    salted = estimate_seconds("見よ、village of Port Havelock の村を。", "ja")
     assert salted > plain + 0.5
 
 
@@ -110,7 +110,7 @@ def test_punctuation_pauses_count():
 def test_performability_shape():
     # Comfortably within window: fine.
     assert performability_score("Une phrase courte.", "fr", 10) == 1.0
-    # Underrun is NOT penalized (dead air is a diagnostic; the source runs 54-89% fill).
+    # Underrun is NOT penalized (dead air is a diagnostic; the source runs 59-107% fill).
     assert performability_score("Court.", "fr", 30) == 1.0
     assert fill_ratio("Court.", "fr", 30) < 0.2
     # No safe harbor above 1.10: penalty starts immediately.

@@ -30,3 +30,11 @@ designers, four critics) with repository read access; synthesized by the
 session's main agent into `DESIGN.md`. These are research inputs, not
 authoritative specifications — where they conflict with `DESIGN.md`,
 `DESIGN.md` wins.
+
+Historical note: these documents quote the original v0 corpus (a fictional
+film titled "Moon Over Gorganzola", segment ids `mog-NNN`). That corpus was
+later replaced by the current `pastiche-v0` corpus (`ps-NNN`), which preserves
+the same segment windows, feature tags, and gag topology with new surface
+content — so the panel's structural analyses (fill ratios, gag-chain counts,
+cluster arithmetic) carry over. The archives are preserved verbatim as primary
+sources.

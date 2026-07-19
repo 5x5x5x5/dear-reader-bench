@@ -126,9 +126,10 @@ Performability is **measured, not judged**, and enters two ways:
   that misclassification can't flip it. Forfeited segments score as losses
   against eligible opponents in the BT fit.
 - **Underrun (dead air) is a reported diagnostic, never a gate.** The panel's
-  AVT critique ran the original estimator on the English source and found 7 of
-  12 segments at 54–89% fill; under the shipping estimator (which adds pause
-  time) the source spans 57–101% — *the pauses are the comic timing*. Any
+  AVT critique ran the original estimator on the then-current English source
+  and found 7 of 12 segments at 54–89% fill; under the shipping estimator
+  (which adds pause time) the current corpus spans 59–107% — *the pauses are
+  the comic timing*. Any
   floor that flunks the source performance measures speech density, not
   performance fit. We publish fill-ratio distributions per system next to the
   source's own, and a regression test asserts the source never forfeits its
