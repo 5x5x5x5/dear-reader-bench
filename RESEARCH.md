@@ -2,8 +2,10 @@
 
 *Compiled July 2026. Literature background for the benchmark. The
 authoritative evaluation architecture is `DESIGN.md` (v3, produced by a
-four-lens adversarial design panel); §1 below is retained as the v2 instrument
-survey it superseded, with the v3 positions noted inline.*
+four-lens adversarial design panel whose full proposals and critiques are
+archived in `research/panel/` — the primary sources for every design
+decision); §1 below is retained as the v2 instrument survey it superseded,
+with the v3 positions noted inline.*
 
 ## 1. Instruments: what each one measures
 
