@@ -3,19 +3,33 @@
 *Compiled July 2026. This document grounds the benchmark's design decisions in
 the current MT-evaluation and multilingual-LLM literature.*
 
-## 1. Why standard MT metrics fail here
+## 1. Instruments: what each one measures
 
-- **BLEU** punishes paraphrase and rewards n-gram overlap — but a good WPDR
-  translation is *mostly paraphrase*: the joke gets rebuilt, not carried word
-  by word. BLEU would actively reward the worst translations.
-- **chrF/chrF++** fixes tokenization sensitivity, not the paraphrase problem.
-- **COMET**-family learned metrics correlate with human judgment on news-style
-  text and remain the WMT workhorse, but they're trained on adequacy/fluency
-  judgments, not on "did the bombast survive." Useful as a sanity floor
-  (a translation that fails COMET badly is probably broken), useless as the
-  headline number.
-- Conclusion: standard metrics are kept only as **diagnostics**; the headline
-  score must come from rubric-based judgment plus computed performability.
+Design principle: **metric validity is an empirical question, not a position.**
+Rather than declaring in advance which metrics are adequate for comedic
+narration, the benchmark runs every instrument below and includes a
+meta-evaluation step — each instrument is correlated against human judgments
+on a validation sample, and earns (or loses) its place in the headline score
+based on that correlation. This also makes the benchmark useful to the
+metrics community: it produces evidence about how automatic metrics behave on
+paraphrase-heavy performed comedy, a domain absent from WMT test suites.
+
+| instrument | construct measured | cost | role pending validation |
+|---|---|---|---|
+| chrF++, BLEU (sacrebleu) | surface overlap with a reference translation | free | reported baselines. Known limitation to test, not assume: overlap metrics are documented to penalize paraphrase, and this corpus is paraphrase-heavy with a single reference |
+| COMET-22 / COMET-KIWI | semantic adequacy (learned; validated on WMT domains) | cheap | candidate primary instrument for **scene fidelity**; KIWI (reference-free) covers languages without references |
+| speakability (computed, `speakability.py`) | isochrony / fits the time window | free | primary for **performability** — the construct is fully specified, so no validity question arises |
+| LLM judge ensemble, anchored pairwise | voice, humor, names, culture | $$ | candidate primary for the four subjective constructs, *pending* the human-agreement check below |
+| bilingual human raters (≥10% sample) | all constructs | $$$ | gold standard; calibrates every row above |
+
+Meta-evaluation protocol: report per-instrument correlation (segment-level
+Kendall's τ) against the human sample. Instruments below a pre-registered
+threshold are demoted to diagnostics; if the judge ensemble itself falls below
+threshold, rankings are published as *unvalidated* rather than quietly trusted.
+
+(ROUGE is not in the table: it is a recall-oriented summarization metric, not
+part of standard MT evaluation, and measures no construct this benchmark
+targets.)
 
 ## 2. What the literary-translation-evaluation literature says
 
@@ -37,6 +51,9 @@ the current MT-evaluation and multilingual-LLM literature.*
   professional-translator questions answered by an LLM — validation of the
   "narrow questions beat holistic scores" approach; our rubric prompts follow
   this shape.
+- Scope note: the LitEval finding is a documented *risk*, not a verdict on
+  this domain — it was measured on literary prose, not performed comedy. The
+  human-calibration step in §1 is what settles whether it applies here.
 
 ## 3. Performability (the "Dear Reader" constraint)
 
@@ -104,7 +121,13 @@ up, that's the benchmark's headline result.
    provider registry), N systems × M languages.
 3. Judge harness: anchored pairwise ensemble + MQM spans; agreement analysis
    between judges before trusting any ranking.
-4. Baseline COMET/chrF diagnostics via `unbabel-comet` / `sacrebleu`.
-5. Human spot-validation: bilingual raters on a 10% sample to check judge
-   alignment (the LitEval warning makes this non-optional).
-6. Leaderboard report: per-language, per-dimension, per-feature breakdowns.
+4. Automatic-metric baselines via `unbabel-comet` / `sacrebleu` (all systems,
+   all languages).
+5. Human validation sample (bilingual raters, ≥10%): calibrate judges AND
+   automatic metrics; run the §1 meta-evaluation and set headline-score
+   composition from its results.
+6. Recalibrate dimension weights against the human data (regress overall human
+   preference on per-dimension scores) — the current weights are provisional
+   priors, not findings.
+7. Leaderboard report: per-language, per-dimension, per-feature breakdowns,
+   with per-instrument validity appendix.

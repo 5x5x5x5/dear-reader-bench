@@ -33,15 +33,18 @@ can carry anything.
 - **Segments, not sentences.** Units are timed narration segments (10–45s) with
   tagged features (`epithet`, `running_gag`, `pun`, `register_shift`,
   `pop_culture`, `aside`) so scores can be broken out by phenomenon.
-- **Judge ensemble, anchored pairwise.** Absolute rubric scores are noisy and
-  LLM judges are known to over-rate machine output on literary text, so the
-  primary signal is anchored pairwise comparison across systems by a
-  multi-provider judge ensemble (never judging their own provider's output),
-  with MQM-style error spans as diagnostics. See `RESEARCH.md` for the
-  literature behind these choices.
+- **Every instrument runs; humans decide which ones count.** Automatic metrics
+  (chrF++, BLEU, COMET/COMET-KIWI), a multi-provider LLM judge ensemble
+  (anchored pairwise, no judge scores its own provider family), and a computed
+  speakability metric are all reported. A meta-evaluation step correlates each
+  instrument against a bilingual human-rated sample; instruments earn their
+  place in the headline score empirically, and dimension weights are
+  recalibrated against the same data. See `RESEARCH.md` §1 for the protocol
+  and the literature-documented risks it controls for (including LLM-judge
+  bias on literary text).
 - **Performability is computed, not judged.** A speakability metric estimates
   spoken duration of the translation against the segment's time window —
-  the one dimension where we don't need a model's opinion.
+  a fully-specified construct needing no model opinion.
 
 ## Repository layout
 

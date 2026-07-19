@@ -10,6 +10,9 @@ from __future__ import annotations
 
 from .schema import Dimension, Segment
 
+# Provisional priors — to be recalibrated by regressing overall human
+# preference on per-dimension scores once the validation sample exists
+# (RESEARCH.md roadmap step 6).
 WEIGHTS: dict[Dimension, float] = {
     Dimension.VOICE: 0.25,
     Dimension.HUMOR: 0.25,
