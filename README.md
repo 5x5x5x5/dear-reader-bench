@@ -57,4 +57,6 @@ Next per `DESIGN.md` §9: corpus season 2, then the translation/judge harness.
 
 ## License
 
-MIT — see `LICENSE`.
+Code and documentation: Apache-2.0 (`LICENSE`). The pastiche corpus in
+`data/` (and system translations of it): CC BY 4.0 (`data/LICENSE`) — the
+standard split for benchmarks whose dataset is a creative work.
