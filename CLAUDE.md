@@ -59,8 +59,8 @@ Use `uv`, never pip or venv directly. The README's Status section still says
 
 ## The site
 
-- Intended URL: **https://dear-reader-bench.5x5x5x5.dev**. As of 2026-11-16 it has **not been
-  deployed**; check with `curl -I` before assuming either way.
+- Live at **https://dear-reader-bench.5x5x5x5.dev**, first deployed 2026-11-16 from the README
+  as it stood then.
 - It is a Cloudflare Worker serving static files only. `wrangler.jsonc` points at `./site`,
   which is gitignored and produced by `build_site.py` from `README.md`. Editing the README and
   redeploying is how the page changes today.
