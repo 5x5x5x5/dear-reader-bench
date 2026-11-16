@@ -1,0 +1,7 @@
+// Static page built from README.md: uv run build_site.py && npx wrangler deploy
+{
+  "name": "dear-reader-bench",
+  "compatibility_date": "2026-11-01",
+  "assets": { "directory": "./site" },
+  "routes": [{ "pattern": "dear-reader-bench.5x5x5x5.dev", "custom_domain": true }]
+}
