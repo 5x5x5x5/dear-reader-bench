@@ -12,19 +12,61 @@ time window it has to be spoken in.
 
 ## Where things stand
 
-Implemented, with 19 passing tests:
+Implemented, with 38 passing tests plus one per committed submission:
 
 - `src/dearreader_bench/schema.py`: segments, joke cards, adaptation jobs, judgments (pydantic v2).
 - `rubric.py`: the four judged dimensions, two-condition prompts, weights.
 - `speakability.py`: the duration model behind the performability term.
 - `btmodel.py`: Davidson Bradley–Terry fit, phi, the DRS composite.
-- `data/segments.json`: the public corpus, `pastiche-v0`, 12 segments.
+- `data/season2.json` + `data/season2_cards.json`: the headline corpus, `pastiche-s2`, 48
+  segments, 11 gag chains, 71 joke cards, canary GUID. Written to `data/STYLE_BIBLE.md`.
+  **LLM-drafted (Claude Fable 5.2, 2026-11-16), no human edit, no second annotator**: good for
+  building the harness, not for published humor results.
+- `data/segments.json`: season 1, `pastiche-v0`, 12 segments, now a development set.
+- `brief.py`: the adaptation prompt and the draft six-language slate. Bump `HARNESS_VERSION`
+  on any change to it.
+- `submission.py`: `prompt <lang>` and `check <file>`. `SUBMITTING.md`, the PR template and CI
+  (`.github/workflows/test.yml`) are the intake path; files land in `submissions/`.
 
-Not built: no translation runner, no judge harness, no results, no leaderboard. Nothing has been
-run against a model.
+- `providers.py`: the one model call. OpenAI-compatible, OpenRouter by default
+  (`OPENROUTER_API_KEY`, or `DRB_API_KEY` + `DRB_BASE_URL`). Models whose name starts with
+  `mock` are local fakes with a known right answer; the tests run on them.
+- `runner.py`: `python -m dearreader_bench.runner <family/model> <lang...> [--anchor
+  literal|rewrite]` writes a checked submission file.
+- `judge.py`: `python -m dearreader_bench.judge <lang> --judges ...` plans every pair, segment,
+  dimension, order and eligible judge, caches replies by content under `results/cache/`, folds
+  orders, scores forfeits as losses, fits BT, bootstraps by gag chain, and writes
+  `results/<lang>/{judgments.jsonl,leaderboard.md,leaderboard.json,run.lock}`. `--dry-run`
+  prints the call count; use it before spending money.
 
-Next, per `DESIGN.md` §9: (1) corpus season 2 with joke cards, then (2) the harness
-(adaptation-job protocol, translation runner, judgment cache, `run.lock`).
+**First real run, 2026-11-16, Japanese only, a seed and not a result.** `submissions/` holds
+eight systems for `ja` (Claude Sonnet 5.5, Gemini 4 Hydrogen, GPT-6.1 Terra, Ernie 5.5 Flash,
+two Nemotron models, and the literal and source-withheld anchors on Nemotron 3 Ultra), all run
+through `runner.py` over OpenRouter. They were judged by DeepSeek v4.1 Flash, Qwen 3.8 Flash
+and Claude Haiku 5.5 with reasoning switched off (it was about 90% of judge cost). Output is in
+`results/ja/` (gitignored). None of `DESIGN.md` §6 has been run, so the table must not be
+published as a result. What the run taught:
+
+- OpenRouter keeps a stalled request open with keep-alive whitespace, so `providers.py`
+  enforces a total deadline; judge calls get 120 seconds and a retry.
+- Some judges cannot turn reasoning off (GLM 5.3 Flash, Mistral Large 4 answer HTTP 400) and a
+  new account is limited to 20 requests a minute on OpenAI's small models.
+- Grok 4.7 did not return the script within 25 minutes and is not in the roster.
+- There is no pinned open-weight mid-tier anchor yet, and four of eight systems are Nvidia's.
+
+Not built (`DESIGN.md` §9 steps 4 to 6): the Layer-2 instruments, the validation program, the
+human sample. Gaps inside what is built:
+
+- The gags judge is not shown either system's bible (`pairwise_prompt` takes a `gag_context`
+  that `judge.py` does not fill), so bible consistency is not yet judged.
+- The pinned open-weight anchor is just a system you run; nothing enforces that the three
+  anchors are present or checks the known-groups conditions that would invalidate a run.
+- No Dirichlet weight audit, reliability panel or judge-deviation heatmap.
+- `run.lock` records what was asked for, not provider-side model snapshots.
+- The site still renders only the README; there is no leaderboard page.
+
+Still owed on the corpus: human edit of season 2, second annotator on the joke cards,
+pre-registering the language slate.
 
 ## Rules that are not negotiable
 
@@ -40,7 +82,7 @@ Next, per `DESIGN.md` §9: (1) corpus season 2 with joke cards, then (2) the har
 ## Commands
 
 ```sh
-uv run --with pytest --with-editable . pytest -q   # tests
+uv run --no-project --with pytest --with pydantic --with-editable . pytest -q   # tests (no uv.lock left behind)
 uvx ruff check . && uvx ruff format .               # lint and format
 uv run build_site.py                                # render README.md -> site/index.html
 ```
