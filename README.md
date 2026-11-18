@@ -30,8 +30,9 @@ and validation program: **`DESIGN.md`**. Literature and reasoning:
 ## Corpus and copyright
 
 Two tracks. The *public track* runs on an original, copyright-safe synthetic
-corpus in the WPDR style (`data/segments.json` — purpose-built test fiction,
-not an existing film). The *private track* accepts a user-supplied transcript
+corpus in the WPDR style (`data/season2.json`, 48 segments with joke cards —
+purpose-built test fiction, not an existing film; `data/segments.json` is the
+earlier 12-segment development set). The *private track* accepts a user-supplied transcript
 of the real work; **this repo does not and will not distribute Brad Neely's
 text.**
 
@@ -46,15 +47,45 @@ src/dearreader_bench/
   rubric.py               judged dimensions, two-condition prompts, weights
   speakability.py         mixed-script duration model, penalty/forfeit/fill-ratio
   btmodel.py              Davidson Bradley-Terry fit, phi, DRS composite
-data/segments.json        public pastiche corpus
+  brief.py                the adaptation prompt, the same for every system
+  submission.py           submission checker and prompt printer
+  providers.py            one OpenAI-compatible model call (OpenRouter by default), plus mock models
+  runner.py               run a system on the adaptation job, write a submission
+  judge.py                pairwise judging, cache, leaderboard with tiers, run.lock
+data/season2.json         public corpus, season 2 (headline)
+data/season2_cards.json   joke cards for season 2
+data/segments.json        season 1, now a development set
+data/STYLE_BIBLE.md       how a season is written; the blueprint
+SUBMITTING.md             how to submit a system
+submissions/              submitted adaptations, one folder per system
 tests/
 ```
 
 ## Status
 
-Design phase complete; corpus, schema, rubric, duration model, and BT
-aggregation implemented with tests (`pip install -e '.[dev]' && pytest`).
-Next per `DESIGN.md` §9: corpus season 2, then the translation/judge harness.
+No results yet. A first seed run exists (eight systems, Japanese only, cheap
+judges, nothing validated) and its numbers are deliberately not published.
+Built and tested:
+schema, rubric, duration model, BT aggregation, the season 2 corpus with joke
+cards, submission intake, the translation runner and the judge harness (`uv run --with pytest --with-editable . pytest -q`).
+Season 2 was drafted by an LLM and has not had its human edit, so it is fit
+for building the harness and not yet for published humor claims
+(`data/STYLE_BIBLE.md`). Next: a first real run, then the Layer-2 instruments
+and the validation program (`DESIGN.md` §9). Systems can be submitted now: see
+`SUBMITTING.md`.
+
+## Running it
+
+```sh
+export OPENROUTER_API_KEY=...   # or DRB_API_KEY + DRB_BASE_URL for any OpenAI-compatible server
+python -m dearreader_bench.runner <family/model> ja fr        # writes submissions/
+python -m dearreader_bench.runner <family/model> ja --anchor literal
+python -m dearreader_bench.judge ja --judges <three models, three families> --dry-run   # counts calls
+python -m dearreader_bench.judge ja --judges <three models, three families>             # writes results/ja/
+```
+
+Models named `mock/echo`, `mock/terse`, `mock/padded` and judges named `mock.../longer` need
+no key and cost nothing; their leaderboard is labelled a mock run.
 
 ## License
 

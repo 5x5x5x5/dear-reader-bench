@@ -1,0 +1,15 @@
+name: test
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      # Also validates every file under submissions/ (tests/test_season2.py).
+      - run: uv run --no-project --with pytest --with pydantic --with-editable . pytest -q
