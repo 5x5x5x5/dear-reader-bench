@@ -93,7 +93,7 @@ def complete(
 
 
 def _mock(model: str, prompt: str) -> str:
-    """mock/echo, mock/terse, mock/padded translate; any mock model judges by text length."""
+    """Deterministic local fakes for translation, judging, and Layer-2 probes."""
     if "\nText A:\n" in prompt:
         a, b = re.search(
             r"\nText A:\n(.*)\n\nText B:\n(.*)\n\nQuestion", prompt, re.DOTALL
@@ -102,6 +102,39 @@ def _mock(model: str, prompt: str) -> str:
         if model.endswith("shorter") and longer != "tie":
             longer = "b" if longer == "a" else "a"
         return json.dumps({"winner": longer, "rationale": "mock: length"})
+
+    if "SOURCE-BLIND COMIC-LOCI PROBE" in prompt:
+        text_m = re.search(r"\nTranslation:\n(.*)\n\nReturn", prompt, re.DOTALL)
+        text = text_m.group(1).strip() if text_m else ""
+        # Short/empty translations yield no detected jokes; longer ones yield one locus.
+        jokes = (
+            [{"quote": text[:40], "why_funny": "mock: lands aloud"}]
+            if len(text) >= 40
+            else []
+        )
+        return json.dumps({"jokes": jokes})
+
+    if "SOURCE-AWARE DETECTION-ASYMMETRY PROBE" in prompt:
+        ids = re.findall(r'"joke_id":\s*"([^"]+)"', prompt)
+        explained = "this is funny because" in prompt.lower()
+        verdicts = [
+            {
+                "joke_id": jid,
+                "status": "explained" if explained else "survived",
+                "note": "mock",
+            }
+            for jid in ids
+        ]
+        return json.dumps({"verdicts": verdicts})
+
+    if "GAG-LEDGER SOURCE-CORRESPONDENCE PROBE" in prompt:
+        return json.dumps(
+            {
+                "maps_to_source": True,
+                "consistent_across_arc": True,
+                "rationale": "mock: arc aligns",
+            }
+        )
 
     names = json.loads(re.search(r"^Names: (.*)$", prompt, re.MULTILINE).group(1))
     gags = json.loads(

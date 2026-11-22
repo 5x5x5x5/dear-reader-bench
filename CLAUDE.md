@@ -46,6 +46,14 @@ Implemented, with 38 passing tests plus one per committed submission:
   (flagging alpha < 0.5 as tentative and republishing DRS without them), cluster split-half
   reliability with Spearman–Brown, leave-one-judge-out rank stability, judge-deviation heatmap,
   Dirichlet weight-sensitivity audit, anchor/known-groups validity checks, and fill-ratio summary.
+- `layer2.py`: `python -m dearreader_bench.layer2 <lang> [--probes ...] [--dry-run]` computes the
+  DESIGN.md §3 Layer-2 behavioral instruments (offline inflection-tolerant Gag Ledger, vacuity
+  checks, autopsy taxonomy, and Layer-2/Layer-1 Spearman convergence; plus optional cached
+  model-backed Gag Correspondence double extraction, Detection Asymmetry over `season2_cards.json`,
+  and within-judge Payoff Lift).
+- `lesions.py`: `python -m dearreader_bench.lesions <lang>` runs the DESIGN.md §6 controlled
+  lesion battery (`pad`, `truncate`, `gag_shuffle`, `explain_joke`, `scene_contradict`,
+  `canary_leak`) and null-calibration checks.
 
 **First real run, 2026-11-16, Japanese only, a seed and not a result.** `submissions/` holds
 eight systems for `ja` (Claude Sonnet 5.5, Gemini 4 Hydrogen, GPT-6.1 Terra, Ernie 5.5 Flash,
@@ -62,8 +70,8 @@ published as a result. What the run taught:
 - Grok 4.7 did not return the script within 25 minutes and is not in the roster.
 - There is no pinned open-weight mid-tier anchor yet, and four of eight systems are Nvidia's.
 
-Not built (`DESIGN.md` §9 steps 4 to 6): the Layer-2 instruments, the lesion battery / null
-calibration / TTS criterion study, and the human sample. Remaining gaps inside what is built:
+Not built (`DESIGN.md` §9 steps 4 to 6): the flattening probe (Layer-2), the TTS criterion study,
+and the human sample. Remaining gaps inside what is built:
 
 - There is no default pinned open-weight mid-tier anchor configured in code yet (pass
   `--pinned-anchor <system>` to `judge.py` / `audit.py` to check its presence).
