@@ -10,7 +10,7 @@ Performability is measured (speakability.py), never judged.
 
 from __future__ import annotations
 
-from .schema import Dimension, Segment
+from .schema import AdaptationResult, Corpus, Dimension, Segment
 
 # Pre-registered priors; every release ships a Dirichlet weight-sensitivity
 # audit (DESIGN.md §2.2). Culture is folded into HUMOR until the corpus has
@@ -53,6 +53,56 @@ JUDGE_QUESTIONS: dict[Dimension, str] = {
 }
 
 
+def build_gag_context(
+    segment: Segment,
+    corpus: Corpus,
+    first: AdaptationResult,
+    second: AdaptationResult,
+    max_prior: int = 3,
+) -> str:
+    """Build blind-labeled bible and earlier-arc context for GAGS judging.
+
+    `first` corresponds to Text A and `second` corresponds to Text B in the
+    current presentation order; system identifiers are never included.
+    """
+    lines: list[str] = []
+
+    lower_text = segment.text.lower()
+    matched_names = [n for n in corpus.names if n.lower() in lower_text]
+    if matched_names:
+        lines.append("Declared bible renderings for names in this segment:")
+        for name in matched_names:
+            a_name = first.bible.names.get(name, "(missing)")
+            b_name = second.bible.names.get(name, "(missing)")
+            lines.append(f'- "{name}": Text A = "{a_name}" | Text B = "{b_name}"')
+
+    if segment.gag_id:
+        anchor = corpus.gags.get(segment.gag_id, "")
+        a_anchor = first.bible.gag_anchors.get(segment.gag_id, "(missing)")
+        b_anchor = second.bible.gag_anchors.get(segment.gag_id, "(missing)")
+        lines.append(
+            f'Running gag "{segment.gag_id}" (source anchor: "{anchor}"): '
+            f'Text A bible = "{a_anchor}" | Text B bible = "{b_anchor}"'
+        )
+
+        prior_segments = []
+        for s in corpus.segments:
+            if s.id == segment.id:
+                break
+            if s.gag_id == segment.gag_id:
+                prior_segments.append(s)
+        if prior_segments:
+            a_texts = {s.segment_id: s.text for s in first.segments}
+            b_texts = {s.segment_id: s.text for s in second.segments}
+            lines.append("Earlier segments in this running-gag arc:")
+            for prev in prior_segments[-max_prior:]:
+                lines.append(f"- [{prev.id}] Source: {prev.text}")
+                lines.append(f"  Text A: {a_texts.get(prev.id, '')}")
+                lines.append(f"  Text B: {b_texts.get(prev.id, '')}")
+
+    return "\n".join(lines)
+
+
 def pairwise_prompt(
     segment: Segment,
     language: str,
@@ -67,7 +117,11 @@ def pairwise_prompt(
     source-aware dimensions (gags, fidelity) include it.
     """
     blind = dimension in SOURCE_BLIND
-    gag = f"\nRunning-gag context from earlier segments:\n{gag_context}\n" if gag_context else ""
+    gag = (
+        f"\nRunning-gag and bible context:\n{gag_context}\n"
+        if gag_context and not blind
+        else ""
+    )
     header = (
         "You are judging two candidate texts from a bombastic comedic film-narration "
         "performance (in the tradition of alternate-audio riff tracks). "

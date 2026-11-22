@@ -33,11 +33,19 @@ Implemented, with 38 passing tests plus one per committed submission:
   `mock` are local fakes with a known right answer; the tests run on them.
 - `runner.py`: `python -m dearreader_bench.runner <family/model> <lang...> [--anchor
   literal|rewrite]` writes a checked submission file.
-- `judge.py`: `python -m dearreader_bench.judge <lang> --judges ...` plans every pair, segment,
-  dimension, order and eligible judge, caches replies by content under `results/cache/`, folds
-  orders, scores forfeits as losses, fits BT, bootstraps by gag chain, and writes
-  `results/<lang>/{judgments.jsonl,leaderboard.md,leaderboard.json,run.lock}`. `--dry-run`
-  prints the call count; use it before spending money.
+- `judge.py`: `python -m dearreader_bench.judge <lang> --judges ... [--pinned-anchor <sys>]` plans
+  every pair, segment, dimension, order and eligible judge (passing blind-labeled bible + prior-arc
+  context for `gags`), caches replies and provider-reported served model snapshots under
+  `results/cache/`, folds orders, scores forfeits as losses, fits BT, bootstraps by gag chain, runs
+  the audit panel, and writes
+  `results/<lang>/{judgments.jsonl,leaderboard.md,leaderboard.json,audit.md,audit.json,run.lock}`.
+  `--dry-run` prints the call count; use it before spending money.
+- `audit.py`: `python -m dearreader_bench.audit <lang> [--pinned-anchor <sys>]` runs the offline
+  DESIGN.md §6/§2.2 reliability and validity panel on any existing `judgments.jsonl` (zero API
+  calls): position-swap consistency and first-position bias, Krippendorff's alpha per dimension
+  (flagging alpha < 0.5 as tentative and republishing DRS without them), cluster split-half
+  reliability with Spearman–Brown, leave-one-judge-out rank stability, judge-deviation heatmap,
+  Dirichlet weight-sensitivity audit, anchor/known-groups validity checks, and fill-ratio summary.
 
 **First real run, 2026-11-16, Japanese only, a seed and not a result.** `submissions/` holds
 eight systems for `ja` (Claude Sonnet 5.5, Gemini 4 Hydrogen, GPT-6.1 Terra, Ernie 5.5 Flash,
@@ -54,15 +62,11 @@ published as a result. What the run taught:
 - Grok 4.7 did not return the script within 25 minutes and is not in the roster.
 - There is no pinned open-weight mid-tier anchor yet, and four of eight systems are Nvidia's.
 
-Not built (`DESIGN.md` §9 steps 4 to 6): the Layer-2 instruments, the validation program, the
-human sample. Gaps inside what is built:
+Not built (`DESIGN.md` §9 steps 4 to 6): the Layer-2 instruments, the lesion battery / null
+calibration / TTS criterion study, and the human sample. Remaining gaps inside what is built:
 
-- The gags judge is not shown either system's bible (`pairwise_prompt` takes a `gag_context`
-  that `judge.py` does not fill), so bible consistency is not yet judged.
-- The pinned open-weight anchor is just a system you run; nothing enforces that the three
-  anchors are present or checks the known-groups conditions that would invalidate a run.
-- No Dirichlet weight audit, reliability panel or judge-deviation heatmap.
-- `run.lock` records what was asked for, not provider-side model snapshots.
+- There is no default pinned open-weight mid-tier anchor configured in code yet (pass
+  `--pinned-anchor <system>` to `judge.py` / `audit.py` to check its presence).
 - The site still renders only the README; there is no leaderboard page.
 
 Still owed on the corpus: human edit of season 2, second annotator on the joke cards,

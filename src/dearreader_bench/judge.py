@@ -21,10 +21,17 @@ from itertools import combinations
 from pathlib import Path
 
 from . import __version__
+from .audit import audit_run, render_audit
 from .brief import HARNESS_VERSION, LANGUAGES
 from .btmodel import composite, fit, tally
 from .providers import complete, extract_json
-from .rubric import JUDGE_QUESTIONS, WEIGHTS, no_self_judging, pairwise_prompt
+from .rubric import (
+    JUDGE_QUESTIONS,
+    WEIGHTS,
+    build_gag_context,
+    no_self_judging,
+    pairwise_prompt,
+)
 from .runner import DEFAULT_SUBMISSIONS
 from .schema import AdaptationResult, Corpus, Dimension, PairwiseJudgment, load_corpus
 from .speakability import is_forfeit
@@ -78,7 +85,12 @@ def plan(
 
 
 def _judge_once(
-    call: tuple, roster: dict[str, AdaptationResult], cache: Path
+    call: tuple,
+    roster: dict[str, AdaptationResult],
+    corpus: Corpus,
+    cache: Path,
+    served_models: dict[str, set[str]] | None = None,
+    served_lock: threading.Lock | None = None,
 ) -> PairwiseJudgment:
     segment, dimension, a, b, order, judge = call
     text = {
@@ -87,22 +99,46 @@ def _judge_once(
     }
     first, second = (a, b) if order == 0 else (b, a)
     language = roster[a].language
+    gag_context = (
+        build_gag_context(segment, corpus, roster[first], roster[second])
+        if dimension is Dimension.GAGS
+        else ""
+    )
     prompt = pairwise_prompt(
-        segment, LANGUAGES[language], dimension, text[first], text[second]
+        segment,
+        LANGUAGES[language],
+        dimension,
+        text[first],
+        text[second],
+        gag_context=gag_context,
     )
     entry = cache / (
         hashlib.sha256(f"{judge}\n{prompt}".encode()).hexdigest() + ".json"
     )
+    served = ""
     if entry.exists():
-        reply = json.loads(entry.read_text(encoding="utf-8"))["reply"]
+        cached = json.loads(entry.read_text(encoding="utf-8"))
+        reply = cached["reply"]
+        served = str(cached.get("served_model", ""))
     else:
-        reply = complete(judge, prompt, temperature=0, timeout=120, reasoning=False)
+        meta: dict[str, str] = {}
+        reply = complete(
+            judge, prompt, temperature=0, timeout=120, reasoning=False, meta=meta
+        )
+        served = meta.get("served_model", "")
         # Identical candidate texts give both orders the same key, so write atomically.
         scratch = entry.with_suffix(f".{threading.get_ident()}.tmp")
         scratch.write_text(
-            json.dumps({"judge": judge, "reply": reply}), encoding="utf-8"
+            json.dumps({"judge": judge, "served_model": served, "reply": reply}),
+            encoding="utf-8",
         )
         scratch.replace(entry)
+    if served and served_models is not None:
+        if served_lock is not None:
+            with served_lock:
+                served_models.setdefault(judge, set()).add(served)
+        else:
+            served_models.setdefault(judge, set()).add(served)
     try:
         verdict = extract_json(reply)
         shown = verdict["winner"] if verdict["winner"] in ("a", "b", "tie") else "tie"
@@ -127,12 +163,22 @@ def _judge_once(
 def run_judges(
     calls: list[tuple],
     roster: dict[str, AdaptationResult],
+    corpus: Corpus,
     cache: Path,
     workers: int = 8,
+    served_models: dict[str, set[str]] | None = None,
 ) -> list[PairwiseJudgment]:
     cache.mkdir(parents=True, exist_ok=True)
+    lock = threading.Lock()
     with ThreadPoolExecutor(workers) as pool:
-        return list(pool.map(lambda call: _judge_once(call, roster, cache), calls))
+        return list(
+            pool.map(
+                lambda call: _judge_once(
+                    call, roster, corpus, cache, served_models, lock
+                ),
+                calls,
+            )
+        )
 
 
 def fold(
@@ -216,15 +262,35 @@ def leaderboard(
     return rows
 
 
-def render(rows: list[dict], language: str, corpus: Corpus, judges: list[str]) -> str:
+def render(
+    rows: list[dict],
+    language: str,
+    corpus: Corpus,
+    judges: list[str],
+    audit: dict | None = None,
+) -> str:
     mock = any(n.startswith("mock") for n in [*judges, *(r["system"] for r in rows)])
     dims = [d.value for d in Dimension if any(d.value in r for r in rows)]
+    banners: list[str] = [
+        "**MOCK RUN: these numbers test the pipeline and describe no model.**"
+        if mock
+        else "**Unvalidated: the DESIGN.md §6 validation program has not been run on this.**"
+    ]
+    if audit is not None:
+        validity = audit.get("validity", {})
+        if validity.get("status") == "invalid":
+            reasons = "; ".join(validity.get("failures", []))
+            banners.append(f"**INVALID RUN (known-groups check failed): {reasons}.**")
+        tentative = audit.get("tentative_dimensions") or []
+        if tentative:
+            banners.append(
+                f"**Tentative dimensions (Krippendorff's alpha < 0.5): {', '.join(tentative)}.** "
+                "See `audit.md` for DRS republished without them."
+            )
     lines = [
         f"# {LANGUAGES[language]} on {corpus.corpus}",
         "",
-        "**MOCK RUN: these numbers test the pipeline and describe no model.**"
-        if mock
-        else "**Unvalidated: the DESIGN.md §6 validation program has not been run on this.**",
+        *banners,
         "",
         "| tier | system | DRS | 95% interval | P | " + " | ".join(dims) + " |",
         "|---|---|---|---|---|" + "---|" * len(dims),
@@ -240,9 +306,14 @@ def render(rows: list[dict], language: str, corpus: Corpus, judges: list[str]) -
 
 
 def run_lock(
-    corpus_path: Path, corpus: Corpus, judges: list[str], roster: list[str]
+    corpus_path: Path,
+    corpus: Corpus,
+    judges: list[str],
+    roster: list[str],
+    served_models: dict[str, set[str]] | None = None,
+    pinned_anchor: str | None = None,
 ) -> dict:
-    return {
+    lock: dict = {
         "corpus": corpus.corpus,
         "corpus_sha256": hashlib.sha256(corpus_path.read_bytes()).hexdigest(),
         "harness_version": HARNESS_VERSION,
@@ -251,12 +322,20 @@ def run_lock(
                 {d.value: q for d, q in JUDGE_QUESTIONS.items()}, sort_keys=True
             ).encode()
         ).hexdigest(),
+        "gags_bible_context": True,
         "estimator_version": __version__,
         "weights": {d.value: w for d, w in WEIGHTS.items()},
         "judges": judges,
         "judge_settings": {"temperature": 0, "reasoning": False},
         "systems": roster,
     }
+    if served_models:
+        lock["served_models"] = {
+            j: sorted(models) for j, models in sorted(served_models.items()) if models
+        }
+    if pinned_anchor is not None:
+        lock["pinned_anchor"] = pinned_anchor
+    return lock
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -269,6 +348,11 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--submissions", type=Path, default=DEFAULT_SUBMISSIONS)
     parser.add_argument(
         "--out", type=Path, default=DEFAULT_CORPUS.parents[1] / "results"
+    )
+    parser.add_argument(
+        "--pinned-anchor",
+        default=None,
+        help="Pinned open-weight mid-tier anchor system id (DESIGN.md §2.2)",
     )
     parser.add_argument("--replicates", type=int, default=200)
     parser.add_argument("--workers", type=int, default=8, help="parallel judge calls")
@@ -294,7 +378,10 @@ def main(argv: list[str] | None = None) -> int:
 
     out = args.out / args.language
     out.mkdir(parents=True, exist_ok=True)
-    judgments = run_judges(calls, roster, args.out / "cache", args.workers)
+    served_models: dict[str, set[str]] = {}
+    judgments = run_judges(
+        calls, roster, corpus, args.out / "cache", args.workers, served_models
+    )
     unparseable = sum(j.rationale == "UNPARSEABLE" for j in judgments)
     if unparseable:
         log.warning(
@@ -304,12 +391,32 @@ def main(argv: list[str] | None = None) -> int:
         "".join(j.model_dump_json() + "\n" for j in judgments), encoding="utf-8"
     )
     rows = leaderboard(fold(judgments, roster, corpus), roster, corpus, args.replicates)
-    table = render(rows, args.language, corpus, args.judges)
+    audit = audit_run(
+        judgments,
+        roster,
+        corpus,
+        pinned_anchor=args.pinned_anchor,
+        split_half_splits=min(20, max(2, args.replicates)),
+    )
+    table = render(rows, args.language, corpus, args.judges, audit=audit)
     (out / "leaderboard.md").write_text(table, encoding="utf-8")
     (out / "leaderboard.json").write_text(
         json.dumps(rows, indent=1) + "\n", encoding="utf-8"
     )
-    lock = run_lock(args.corpus, corpus, args.judges, sorted(roster))
+    (out / "audit.json").write_text(
+        json.dumps(audit, indent=1) + "\n", encoding="utf-8"
+    )
+    (out / "audit.md").write_text(
+        render_audit(audit, args.language, corpus), encoding="utf-8"
+    )
+    lock = run_lock(
+        args.corpus,
+        corpus,
+        args.judges,
+        sorted(roster),
+        served_models=served_models,
+        pinned_anchor=args.pinned_anchor,
+    )
     (out / "run.lock").write_text(json.dumps(lock, indent=1) + "\n", encoding="utf-8")
     sys.stdout.write(table)
     return 0

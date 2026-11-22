@@ -88,6 +88,12 @@ def test_end_to_end_on_mock_models(tmp_path, monkeypatch):
     assert "MOCK RUN" in (out / "fr" / "leaderboard.md").read_text()
     lock = judge.json.loads((out / "fr" / "run.lock").read_text())
     assert lock["corpus"] == "pastiche-s2" and len(lock["systems"]) == 4
+    assert lock["gags_bible_context"] is True
+    assert set(lock["served_models"]) == set(JUDGES)
+    audit_data = judge.json.loads((out / "fr" / "audit.json").read_text())
+    assert set(audit_data["position_swap"]) == set(JUDGES)
+    assert "dirichlet_weights" in audit_data
+    assert (out / "fr" / "audit.md").exists()
 
     # A second run is served from the cache: no model is called at all.
     def refuse(*a, **k):

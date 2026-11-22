@@ -32,9 +32,16 @@ def complete(
     temperature: float | None = None,
     timeout: float = 900,
     reasoning: bool = True,
+    meta: dict[str, str] | None = None,
 ) -> str:
-    """Send one user message and return the reply text. A stalled call is retried."""
+    """Send one user message and return the reply text. A stalled call is retried.
+
+    If `meta` is provided, populates provider-reported metadata such as
+    `served_model` and `response_id` so `run.lock` can pin actual snapshots.
+    """
     if model.startswith("mock"):
+        if meta is not None:
+            meta["served_model"] = model
         return _mock(model, prompt)
     key = os.environ.get("DRB_API_KEY") or os.environ.get("OPENROUTER_API_KEY")
     if not key:
@@ -62,7 +69,13 @@ def complete(
                     chunks.append(chunk)
                     if time.monotonic() > deadline:
                         raise TimeoutError(f"{model}: no reply within {timeout:.0f}s")
-                reply = json.loads(b"".join(chunks))["choices"][0]["message"]
+                payload = json.loads(b"".join(chunks))
+                if meta is not None:
+                    if isinstance(payload.get("model"), str):
+                        meta["served_model"] = payload["model"]
+                    if isinstance(payload.get("id"), str):
+                        meta["response_id"] = payload["id"]
+                reply = payload["choices"][0]["message"]
                 return reply.get("content") or ""  # some models return reasoning only
         except urllib.error.HTTPError as error:
             if error.code not in _RETRY_STATUS or attempt == 3:
