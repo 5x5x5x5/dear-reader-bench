@@ -75,7 +75,6 @@ and the human sample. Remaining gaps inside what is built:
 
 - There is no default pinned open-weight mid-tier anchor configured in code yet (pass
   `--pinned-anchor <system>` to `judge.py` / `audit.py` to check its presence).
-- The site still renders only the README; there is no leaderboard page.
 
 Still owed on the corpus: human edit of season 2, second annotator on the joke cards,
 pre-registering the language slate.
@@ -116,8 +115,13 @@ Use `uv`, never pip or venv directly. The README's Status section still says
 - Live at **https://dear-reader-bench.5x5x5x5.dev**, first deployed 2026-11-16 from the README
   as it stood then.
 - It is a Cloudflare Worker serving static files only. `wrangler.jsonc` points at `./site`,
-  which is gitignored and produced by `build_site.py` from `README.md`. Editing the README and
-  redeploying is how the page changes today.
+  which is gitignored and built by `uv run build_site.py` (backed by
+  `src/dearreader_bench/sitegen.py` + `src/dearreader_bench/site_assets/`).
+- The site renders the Screening Room (48-segment corpus + Joke Cards + side-by-side adaptation
+  viewer), the Bible Wall, the DRS methodology & performability curve, and deterministic
+  measurements only (`P`, fill ratios, Gag Ledger) plus the §6 validation gate. Unvalidated judged
+  scores are never included in default builds (pass `--include-unvalidated-preview` for local
+  review only); the corpus canary GUID is never emitted.
 - Deploy: `uv run build_site.py && npx wrangler deploy`. This needs `CLOUDFLARE_API_TOKEN` and
   `CLOUDFLARE_ACCOUNT_ID` in the environment. If they are missing, stop and ask; do not use
   `wrangler login` or `--temporary` as a workaround. Never print or commit the token.
@@ -128,8 +132,6 @@ Use `uv`, never pip or venv directly. The README's Status section still says
   danielsiegle.com; do not touch DNS records or redirect rules on the zone. The custom domain
   for this Worker is created by wrangler from `wrangler.jsonc`, and that is the only change
   this repo should make there.
-- When the site grows beyond the README (a leaderboard, sample outputs), replace
-  `build_site.py` instead of layering on it. It is a 50-line placeholder.
 
 ## Related
 
